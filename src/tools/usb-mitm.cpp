@@ -21,7 +21,8 @@
 #include "ConfigParser.h"
 #include "version.h"
 
-static unsigned debug=0;
+static unsigned debug;
+static int done;
 
 Manager* manager;
 
@@ -54,29 +55,10 @@ void cleanup(void) {
  */
 void handle_signal(int signum)
 {
-	struct sigaction action;
-	switch (signum) {
-		case SIGTERM:
-		case SIGINT:
-			if(signum == SIGTERM)
-				fprintf(stderr, "Received SIGTERM, stopping relaying...\n");
-			else
-				fprintf(stderr, "Received SIGINT, stopping relaying...\n");
-			if (manager) {manager->stop_relaying();}
-			fprintf(stderr, "Exiting\n");
-			memset(&action, 0, sizeof(struct sigaction));
-			action.sa_handler = SIG_DFL;
-			sigaction(SIGTERM, &action, NULL);
-			break;
-		case SIGHUP:
-			fprintf(stderr, "Received SIGHUP, restarting relaying...\n");
-			if (manager) {manager->stop_relaying();}
-			if (manager) {manager->start_control_relaying();}
-			break;
-	}
+	done = 1;
 }
 
-extern "C" int main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int opt;
 	char *host;
@@ -87,7 +69,6 @@ extern "C" int main(int argc, char **argv)
 	memset(&action, 0, sizeof(struct sigaction));
 	action.sa_handler = handle_signal;
 	sigaction(SIGTERM, &action, NULL);
-	sigaction(SIGHUP, &action, NULL);
 	sigaction(SIGINT, &action, NULL);
 	
 	ConfigParser *cfg = new ConfigParser();
@@ -196,14 +177,15 @@ extern "C" int main(int argc, char **argv)
 		cfg->print_config();
 
 		manager->start_control_relaying();
-		while ( ( status = manager->get_status()) == USBM_RELAYING) {
+
+		while (!done && ((status = manager->get_status()) == USBM_RELAYING)) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 
 		manager->stop_relaying();
 		manager->cleanup();
 		delete(manager);
-	} while ( status == USBM_RESET);
+	} while (!done && status == USBM_RESET);
 	
 	if (keylog_output_file) {
 		fclose(keylog_output_file);
