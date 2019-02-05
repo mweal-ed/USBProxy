@@ -1,7 +1,7 @@
 /*
  * Copyright 2013 Dominic Spill
  * Copyright 2013 Adam Stasiak
- * 
+ *
  * Based on libusb-gadget - Copyright 2009 Daiki Ueno <ueno@unixuser.org>
  *
  * This file is part of USBProxy.
@@ -175,6 +175,7 @@ const char * find_gadget_filename()
 
 	static const char *devices[] = {
 		"12480000.hsotg",
+		"20980000.usb",
 		"2184000.usb",
 		"at91_udc",
 		"atmel_usba_udc",
@@ -217,7 +218,7 @@ const char * find_gadget_filename()
 	}
 
 	closedir(dir);
-	
+
 	return filename;
 }
 
