@@ -21,6 +21,8 @@
 #include "ConfigParser.h"
 #include "version.h"
 
+#include  <mcheck.h>
+
 static unsigned debug;
 static int done;
 
@@ -70,7 +72,7 @@ int main(int argc, char **argv)
 	action.sa_handler = handle_signal;
 	sigaction(SIGTERM, &action, NULL);
 	sigaction(SIGINT, &action, NULL);
-	
+
 	ConfigParser *cfg = new ConfigParser();
 
 	while ((opt = getopt (argc, argv, "v:p:P:D:H:dsc:C:lmik::w:hx")) != EOF) {
@@ -172,21 +174,21 @@ int main(int argc, char **argv)
 
 	int status;
 	do {
-		manager=new Manager(debug);
+		manager=new Manager(cfg);
 		manager->load_plugins(cfg);
 		cfg->print_config();
-
+                mtrace ();
 		manager->start_control_relaying();
 
 		while (!done && ((status = manager->get_status()) == USBM_RELAYING)) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			std::this_thread::sleep_for(std::chrono::milliseconds(999));
 		}
 
 		manager->stop_relaying();
 		manager->cleanup();
 		delete(manager);
 	} while (!done && status == USBM_RESET);
-	
+
 	if (keylog_output_file) {
 		fclose(keylog_output_file);
 	}
