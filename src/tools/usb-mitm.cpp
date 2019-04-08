@@ -75,7 +75,10 @@ int main(int argc, char **argv)
 
 	ConfigParser *cfg = new ConfigParser();
 
-	while ((opt = getopt (argc, argv, "v:p:P:D:H:dsc:C:lmik::w:hx")) != EOF) {
+	cfg->set("DeviceProxy::nice", "50");
+	cfg->set("RelayReader::nice", "4");
+
+	while ((opt = getopt (argc, argv, "v:p:P:D:H:dsc:C:lmik::w:hxn:N:L")) != EOF) {
 		switch (opt) {
 		case 'v':
 			cfg->set("vendorId", optarg);
@@ -144,6 +147,24 @@ int main(int argc, char **argv)
 			cfg->set("Injector_UDP::port", "12345");
 			cfg->add_to_vector("Plugins", "PacketFilter_UDPHID");
 			break;
+		case 'n':
+			// used to set a delay during USB_ENDPOINT_XFER_BULK
+			// receive_data calls
+			cfg->set("DeviceProxy::nice", optarg);
+			break;
+
+		case 'N':
+			// used to only send every n'th zero length packet
+			// from the device back to the host
+			cfg->set("RelayReader::nice", optarg);
+			break;
+
+		case 'L':
+			// typical setting for an printer
+			cfg->set("DeviceProxy::nice", "50");
+			cfg->set("RelayReader::nice", "4");
+			break;
+
 		case 'h':
 		default:
 			usage(argv[0]);
