@@ -560,7 +560,6 @@ void Manager::stopEps(unsigned start)
 	}
 
 	configurationNumber = 0;
-	std::cerr << "disconnected" << std::endl;
 }
 
 void Manager::stop_relaying(){
@@ -632,12 +631,7 @@ void Manager::connectNotification()
 void Manager::disconnectNotification()
 {
 	std::cout << "==============disconnect" << std::endl;
-#if 1 // temp msw testing
 	stopEps(ALL_ENDPOINTS_EXCEPT_EP0);
-#else
-        status = USBM_RESET;
-#endif
-
 }
 
 void Manager::setConfig(__u8 index) {
@@ -649,9 +643,7 @@ void Manager::setConfig(__u8 index) {
 		return;
 	}
 
-	std::cout << "changing from config " << (int)configurationNumber << " to " << (int)index << std::endl;
 	configurationNumber = index;;
-
 	if (0 == index) {
 		return;
 	}
@@ -671,7 +663,6 @@ void Manager::setConfig(__u8 index) {
 		hostProxy->setConfig(device->get_configuration(index),NULL,device->is_highspeed());
 	}
 	start_data_relaying();
-	std::cerr << "connected and relaying" << std::endl;
 }
 
 /* Delete all injectors and filters - easier to manage */
